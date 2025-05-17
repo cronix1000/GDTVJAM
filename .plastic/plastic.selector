@@ -1,0 +1,4 @@
+repository "GMTKJAM@cronix100@cloud"
+  path "/"
+    br "/main"
+    co "/main"
