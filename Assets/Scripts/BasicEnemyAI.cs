@@ -1,291 +1,277 @@
 using UnityEngine;
-using UnityEngine.UI; // For health bar
+using UnityEngine.UI; // For health bar, if you keep it
 
 public class BasicEnemyAI : BaseAI // Inherit from BaseAI
 {
     [Header("Enemy Specifics")]
+    [Tooltip("Radius to detect the player.")]
     public float detectionRadius = 10f;
+    [Tooltip("Radius within which the enemy attempts to attack or make contact.")]
+    public float attackRadius = 1.5f; // Or stopping distance
+    [Tooltip("Damage dealt to player on contact or by attack.")]
     public int damageToPlayer = 10;
+    [Tooltip("XP awarded when defeated.")]
     public int xpValue = 50;
-    public LayerMask goatLayer;
-    public LayerMask playerLayer; // For detecting player
+    [Tooltip("Layer mask for detecting the player.")]
+    public LayerMask playerLayer;
 
-    [Header("Health & UI")]
+    [Header("Health & Optional UI")]
+    [Tooltip("Optional health bar fill image.")]
     public Image healthBarFill;
     public int totalHealth = 20;
-    [SerializeField] private int currentHealth; // Use [SerializeField] for private field visibility in Inspector
+    [SerializeField] private int currentHealth;
 
-    [Header("Conversion Behavior")]
-    public float conversionTimeToConvert = 1.5f;
-    private float currentConversionProgress = 0f;
-    private PeacefulGoat _goatBeingConverted = null;
+    // --- REMOVED Conversion Behavior ---
+    // public float conversionTimeToConvert = 1.5f;
+    // private float currentConversionProgress = 0f;
+    // private PeacefulGoat _goatBeingConverted = null; // Goat-specific
 
-    private Transform _targetGoatTransform;
-    private PeacefulGoat _targetGoatScript;
-    private Transform _playerTransform;
+    // --- REMOVED Goat Specific Target Variables ---
+    // private Transform _targetGoatTransform;
+    // private PeacefulGoat _targetGoatScript;
 
-    private enum AiState { Wandering, ChasingGoat, ConvertingGoat } // Simplified states for this example
-    private AiState currentState = AiState.Wandering;
+    private Transform _playerTransform; // Store reference to player
+
+    private enum AiState { Wandering, ChasingPlayer, Attacking } // Simplified states
+    [SerializeField] private AiState currentState = AiState.Wandering; //SerializeField to see in inspector
+
+    // Optional: For timed attacks
+    [Header("Attacking Behavior (Optional)")]
+    [Tooltip("Time between attacks if the enemy has a ranged or cooldown-based attack.")]
+    public float attackCooldown = 2f;
+    private float currentAttackCooldownTimer = 0f;
+    [Tooltip("Duration of an attack animation or action where the enemy might be locked.")]
+    public float attackDuration = 0.5f; // e.g., for a lunge or spell cast
+    private float currentAttackActionTimer = 0f;
+
 
     protected override void Awake()
     {
-        base.Awake(); // Call base Awake for rb, animator, visualsTransform, etc.
+        base.Awake(); // Call base Awake
         currentHealth = totalHealth;
-        // BaseAI.moveSpeed is used directly or can be adjusted here if needed.
-        // BaseAI.wanderSpeedMultiplier applies to moveSpeed during PerformWanderBehavior.
     }
 
     protected override void Start()
     {
-        base.Start(); // Call base Start for initialPosition, rb setup, initial wander destination
+        base.Start(); // Call base Start
 
+        // Find player using tag. Ensure your player GameObject has the "Player" tag.
         GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
             _playerTransform = playerObj.transform;
         }
-        InvokeRepeating(nameof(FindPotentialTargets), 0f, 0.5f);
-        UpdateHealthBar();
+        else
+        {
+            Debug.LogWarning($"BasicEnemyAI ({gameObject.name}): Player not found by tag. AI may not function correctly.", this);
+        }
+
+        // More frequent check for player presence if not initially found or if player can respawn.
+        InvokeRepeating(nameof(ScanForPlayer), 0f, 0.5f); // Periodically scan for player
+        UpdateHealthBarUI();
     }
 
-    void FindPotentialTargets()
+    void ScanForPlayer()
     {
-        if (currentKnockbackTimer > 0 || currentState == AiState.ConvertingGoat) return;
+        if (currentKnockbackTimer > 0) return; // Don't change targets during knockback
 
-        // If currently "charging" a conversion, ensure that goat is still valid
-        if (_goatBeingConverted != null)
+        if (_playerTransform == null) // Try to find player if not already set
         {
-            if (!_goatBeingConverted.gameObject.activeInHierarchy || _goatBeingConverted.currentState == PeacefulGoat.GoatState.Converting)
+             GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+             if (playerObj != null) _playerTransform = playerObj.transform;
+        }
+
+        if (_playerTransform != null)
+        {
+            float distanceToPlayerSqr = (_playerTransform.position - transform.position).sqrMagnitude;
+            if (distanceToPlayerSqr <= detectionRadius * detectionRadius)
             {
-                ClearConversionState(); // Goat gone or already converted by someone else
-                // Continue to find a new target
+                if (currentState == AiState.Wandering) // Switch to chasing if player detected
+                {
+                    currentState = AiState.ChasingPlayer;
+                    // Debug.Log($"{gameObject.name} detected player and started chasing.");
+                }
             }
             else
             {
-                // Still focused on converting this goat, ensure we are in chase/convert state
-                _targetGoatScript = _goatBeingConverted;
-                _targetGoatTransform = _goatBeingConverted.transform;
-                currentState = AiState.ChasingGoat; // Or ConvertingGoat if already in contact
-                return;
-            }
-        }
-
-        // If we have a valid primary target goat that's not being converted (by us or others)
-        if (_targetGoatTransform != null && _targetGoatScript != null &&
-            _targetGoatScript.gameObject.activeInHierarchy &&
-            _targetGoatScript.currentState != PeacefulGoat.GoatState.Converting)
-        {
-            currentState = AiState.ChasingGoat;
-            return; // Stick to current target
-        }
-
-
-        // Search for a new goat target if no valid current target or conversion target
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, detectionRadius, goatLayer);
-        PeacefulGoat closestGoat = null;
-        float closestDistanceSqr = Mathf.Infinity;
-
-        foreach (var hitCollider in hitColliders)
-        {
-            PeacefulGoat potentialGoat = hitCollider.GetComponent<PeacefulGoat>();
-            if (potentialGoat && potentialGoat.currentState != PeacefulGoat.GoatState.Converting)
-            {
-                float distanceSqr = (transform.position - hitCollider.transform.position).sqrMagnitude;
-                if (distanceSqr < closestDistanceSqr)
+                if (currentState == AiState.ChasingPlayer || currentState == AiState.Attacking) // If player out of range, go back to wandering
                 {
-                    closestDistanceSqr = distanceSqr;
-                    closestGoat = potentialGoat;
+                    currentState = AiState.Wandering;
+                    _playerTransform = null; // Lose target if they get too far. ScanForPlayer will try to reacquire.
+                    // Debug.Log($"{gameObject.name} lost player, returning to wander.");
                 }
             }
         }
-
-        if (closestGoat != null)
+        else // No player found
         {
-            if (_targetGoatScript != closestGoat) // If target changed
+            if (currentState != AiState.Wandering)
             {
-                ClearConversionState(); // Reset progress if target switches
+                currentState = AiState.Wandering; // Default to wandering if no player reference
             }
-            _targetGoatScript = closestGoat;
-            _targetGoatTransform = closestGoat.transform;
-            currentState = AiState.ChasingGoat;
         }
-        else // No target found
-        {
-            ClearGoatTarget();
-            currentState = AiState.Wandering;
-        }
-    }
-    
-    private void ClearGoatTarget()
-    {
-        _targetGoatTransform = null;
-        _targetGoatScript = null;
-        // Don't clear _goatBeingConverted here unless logic dictates, FindPotentialTargets might re-assign it
     }
 
-    private void ClearConversionState()
+    protected override void Update()
     {
-        currentConversionProgress = 0f;
-        _goatBeingConverted = null;
-        // If was in ConvertingGoat state, switch out
-        if(currentState == AiState.ConvertingGoat)
+        base.Update(); // Handles knockback timer
+
+        if (currentKnockbackTimer > 0) return;
+
+        // Handle cooldowns if applicable
+        if (currentAttackCooldownTimer > 0)
         {
-            currentState = AiState.Wandering; // Or ChasingGoat if target still valid
+            currentAttackCooldownTimer -= Time.deltaTime;
+        }
+        if (currentAttackActionTimer > 0)
+        {
+            currentAttackActionTimer -= Time.deltaTime;
+            if (currentAttackActionTimer <= 0)
+            {
+                // Attack action finished, decide next state (e.g., back to chasing or cooldown)
+                if (currentState == AiState.Attacking) // Ensure still in attacking state
+                {
+                    currentAttackCooldownTimer = attackCooldown; // Start cooldown
+                    currentState = AiState.ChasingPlayer; // Default back to chasing after attack action
+                }
+            }
         }
     }
+
 
     protected override void FixedUpdate()
     {
         if (currentKnockbackTimer > 0 || rb == null)
         {
-            // Knockback is active or no Rigidbody, base FixedUpdate handles this boundary check part.
+            // During knockback, base.FixedUpdate might still apply boundary constraints if needed
+            // but typically velocity is controlled by knockback.
             base.FixedUpdate();
             return;
         }
+
+        if (currentAttackActionTimer > 0) // If in an attack animation/action, likely no movement
+        {
+            StopMovement(); // Or specific attack movement
+            // FaceDirection towards player might still be relevant if attack is directional
+            if(_playerTransform != null) FaceDirection((_playerTransform.position - transform.position).normalized);
+            base.FixedUpdate(); // Apply boundary constraints
+            return;
+        }
+
         switch (currentState)
         {
             case AiState.Wandering:
-                PerformWanderBehavior(); // Use base class wander
+                PerformWanderBehavior(); // Uses base class wander
                 break;
-            case AiState.ChasingGoat:
-                ChaseTargetGoat();
+            case AiState.ChasingPlayer:
+                PerformChasePlayerBehavior();
                 break;
-            case AiState.ConvertingGoat:
-                // Usually stationary during conversion, facing the target.
-                StopMovement();
-                if (_goatBeingConverted != null) FaceDirection(_goatBeingConverted.transform.position);
-                // Conversion progress itself is handled in OnCollisionStay2D
+            case AiState.Attacking:
+                // This state might be brief, for an attack animation.
+                // Movement during attack is handled above (or could be specific logic here).
+                // If it's an instant attack on contact, this state might not be used,
+                // and attack logic happens in OnCollisionEnter.
+                // For this example, we assume Attacking state means "currently performing an attack action".
                 break;
         }
 
         base.FixedUpdate(); // IMPORTANT: Apply boundary constraints from base class AFTER movement logic
     }
 
-    void ChaseTargetGoat()
+    void PerformChasePlayerBehavior()
     {
-        if (_targetGoatTransform == null || !_targetGoatTransform.gameObject.activeInHierarchy ||
-            (_targetGoatScript != null && _targetGoatScript.currentState == PeacefulGoat.GoatState.Converting))
+        if (_playerTransform == null)
         {
-            ClearGoatTarget();
-            ClearConversionState();
-            currentState = AiState.Wandering;
-            // FindPotentialTargets(); // Let Invoke call it, or call if immediate re-target is desired
+            currentState = AiState.Wandering; // Player lost or destroyed
             return;
         }
 
-        float distanceToTarget = Vector2.Distance(rb.position, _targetGoatTransform.position);
-        // Stopping distance should be close enough for collision to register reliably for conversion
-        float stoppingDistance = 0.7f; // Adjust based on enemy/goat collider sizes
+        float distanceToPlayer = Vector2.Distance(rb.position, _playerTransform.position);
 
-        if (distanceToTarget > stoppingDistance)
+        if (distanceToPlayer > attackRadius)
         {
-            MoveTowardsTarget(_targetGoatTransform.position, moveSpeed);
+            MoveTowardsTarget(_playerTransform.position, moveSpeed);
         }
-        else
+        else // Within attack radius
         {
-            StopMovement(); // Stop when close enough
-            FaceDirection(_targetGoatTransform.position);
-            // If in range, collision events will handle starting/progressing conversion.
-            // Consider changing state to ConvertingGoat here if contact is virtually guaranteed.
+            StopMovement(); // Stop to prepare/initiate attack
+            if (_playerTransform != null) FaceDirection((_playerTransform.position - transform.position).normalized);
+
+            // Attempt to attack if cooldown is ready and not already in an attack action
+            if (currentAttackCooldownTimer <= 0 && currentAttackActionTimer <= 0)
+            {
+                InitiateAttack();
+            }
         }
     }
 
+    void InitiateAttack()
+    {
+        // This is where you'd trigger an attack.
+        // It could be instant damage on contact (handled by OnCollision),
+        // or start an attack animation/action.
+        currentState = AiState.Attacking;
+        currentAttackActionTimer = attackDuration; // Lock into attack animation/action
+        currentAttackCooldownTimer = attackCooldown + attackDuration; // Set full cooldown after action completes
+
+        // Example: Play an attack animation
+        // if (animator != null) animator.SetTrigger("Attack");
+
+        // Example: For a simple melee enemy, damage might be applied on collision during the "Attacking" state
+        // or this function could spawn a projectile for a ranged enemy.
+        // For this example, let's assume damage is primarily via contact (OnCollisionEnter2D).
+        Debug.Log($"{gameObject.name} is initiating an attack on player.");
+
+        // If it's a very simple "touch attack" and no animation lock:
+        // TryDamagePlayer(_playerTransform.gameObject); // Could call this directly
+        // currentAttackCooldownTimer = attackCooldown;
+        // currentState = AiState.ChasingPlayer; // Go back to chasing immediately if no attack animation
+    }
+
+
+    // Handle direct contact with player (for melee/touch damage)
     public virtual void OnCollisionEnter2D(Collision2D collision)
     {
         if (currentKnockbackTimer > 0) return;
 
-        HandleContactStart(collision.gameObject);
-        TryDamagePlayer(collision.gameObject);
-    }
-
-    public virtual void OnCollisionStay2D(Collision2D collision)
-    {
-        if (currentKnockbackTimer > 0) return;
-        ProcessContactForConversion(collision.gameObject);
-    }
-
-    public virtual void OnCollisionExit2D(Collision2D collision)
-    {
-        HandleContactEnd(collision.gameObject);
-    }
-
-    void HandleContactStart(GameObject contactObject)
-    {
-        PeacefulGoat goat = contactObject.GetComponent<PeacefulGoat>();
-        // Start "charging" if it's our primary target and not already being converted.
-        if (goat != null && _targetGoatScript == goat && goat.currentState != PeacefulGoat.GoatState.Converting)
+        if ((playerLayer.value & (1 << collision.gameObject.layer)) > 0) // Check if collided object is on playerLayer
         {
-            _goatBeingConverted = goat; // Mark this goat as the one we are "charging up"
-            // currentConversionProgress is NOT reset here. It resets on target switch, successful conversion, or contact end.
-        }
-    }
-
-    void ProcessContactForConversion(GameObject contactObject)
-    {
-        if (_goatBeingConverted != null && contactObject == _goatBeingConverted.gameObject)
-        {
-            if (_goatBeingConverted.currentState != PeacefulGoat.GoatState.Converting)
+            // More robust check:
+            PlayerController player = collision.gameObject.GetComponent<PlayerController>();
+            if (player != null)
             {
-                currentState = AiState.ConvertingGoat; // Explicitly set state
-                currentConversionProgress += Time.deltaTime; // Use Time.deltaTime as collision events are not strictly FixedUpdate
-
-                if (currentConversionProgress >= conversionTimeToConvert)
+                 // Apply damage if in Chasing or Attack state (or always on contact if that's the design)
+                if (currentState == AiState.ChasingPlayer || currentState == AiState.Attacking || attackRadius <= 1.0f /* close enough for touch */)
                 {
-                    TryConvertGoat(_goatBeingConverted);
+                    TryDamagePlayer(collision.gameObject);
+
+                    // Optionally, trigger a short cooldown even for contact damage to prevent rapid multi-hits
+                    // if (currentAttackCooldownTimer <= 0) currentAttackCooldownTimer = 0.5f; // Short touch cooldown
                 }
             }
-            else // Goat got converted by other means (or state changed unexpectedly)
-            {
-                ClearConversionState();
-                FindPotentialTargets(); // Look for a new purpose
-            }
         }
     }
 
-    void HandleContactEnd(GameObject contactObject)
+    // --- REMOVED GOAT CONVERSION COLLISION LOGIC ---
+    // public virtual void OnCollisionStay2D(Collision2D collision) { ... }
+    // public virtual void OnCollisionExit2D(Collision2D collision) { ... }
+    // void HandleContactStart(GameObject contactObject) { ... }
+    // void ProcessContactForConversion(GameObject contactObject) { ... }
+    // void HandleContactEnd(GameObject contactObject) { ... }
+    // void TryConvertGoat(PeacefulGoat goatToConvert) { ... }
+
+    void TryDamagePlayer(GameObject playerObject)
     {
-        // If we lose contact with the specific goat we were "charging up"
-        if (_goatBeingConverted != null && contactObject == _goatBeingConverted.gameObject)
+        // GetComponent is fine if PlayerController is expected on the root of the player.
+        PlayerController playerController = playerObject.GetComponent<PlayerController>();
+        if (playerController != null)
         {
-            // Reset progress for THIS goat as contact is broken. It might still be the primary target.
-            currentConversionProgress = 0f;
-            // Do not nullify _goatBeingConverted here, as we might regain contact.
-            // If currentState was ConvertingGoat, switch back to ChasingGoat.
-            if (currentState == AiState.ConvertingGoat)
-            {
-                currentState = AiState.ChasingGoat;
-            }
-        }
-    }
+            // Assuming PlayerController script (or a dedicated health script) has TakeDamage
+            // This needs to be implemented on your PlayerController
+            // playerController.TakeDamage(damageToPlayer);
+            Debug.Log($"{gameObject.name} damaged player for {damageToPlayer} health.");
 
-    void TryConvertGoat(PeacefulGoat goatToConvert)
-    {
-        if (goatToConvert != null && goatToConvert == _goatBeingConverted && goatToConvert.currentState != PeacefulGoat.GoatState.Converting)
-        {
-            Debug.Log($"{gameObject.name} successfully converted {goatToConvert.name} after {currentConversionProgress:F2}s of contact.");
-            goatToConvert.StartConversionProcess(); // Tell the goat to convert
-
-            // Award XP or other benefits (ensure player exists, etc.)
-            // if (PlayerStats.Instance != null) PlayerStats.Instance.AddXP(xpValue);
-
-            ClearGoatTarget();
-            ClearConversionState();
-            currentState = AiState.Wandering;
-            FindPotentialTargets(); // Proactively look for another target
-        }
-    }
-
-    void TryDamagePlayer(GameObject collidedObject)
-    {
-        // Using CompareTag is often more performant if the player GameObject has the "Player" tag.
-        if (collidedObject.CompareTag("Player"))
-        {
-            PlayerController playerController = collidedObject.GetComponent<PlayerController>(); // Assuming PlayerController script
-            if (playerController != null)
-            {
-                playerController.TakeDamage(damageToPlayer); // Assuming PlayerController has TakeDamage
-                // Optionally, apply knockback to player or self here
-            }
+            // Example: Apply a small knockback to self or player after attacking
+            // if (rb != null) ApplyKnockback((transform.position - playerObject.transform.position).normalized, 1f, 0.2f);
         }
     }
 
@@ -294,15 +280,27 @@ public class BasicEnemyAI : BaseAI // Inherit from BaseAI
         if (currentHealth <= 0) return; // Already dead
 
         currentHealth -= amount;
-        UpdateHealthBar();
+        Debug.Log($"{gameObject.name} took {amount} damage, {currentHealth}/{totalHealth} health remaining.");
+        UpdateHealthBarUI();
 
         if (currentHealth <= 0)
         {
             Die();
         }
+        else
+        {
+            // Optional: Flinch animation or brief state change on taking damage
+            // if (animator != null) animator.SetTrigger("Hit");
+            // If not in knockback, maybe briefly interrupt action or re-evaluate target
+             if (currentKnockbackTimer <= 0 && currentState != AiState.Attacking)
+             {
+                // If player is still a valid target, ensure we are chasing
+                ScanForPlayer(); // Re-evaluate, might make it more reactive
+             }
+        }
     }
-    
-    void UpdateHealthBar()
+
+    void UpdateHealthBarUI()
     {
         if (healthBarFill != null)
         {
@@ -312,27 +310,33 @@ public class BasicEnemyAI : BaseAI // Inherit from BaseAI
 
     protected override void OnKnockbackStart()
     {
-        base.OnKnockbackStart(); // Important to call base for timer setup
+        base.OnKnockbackStart();
         // Enemy-specific reactions to knockback
-        ClearConversionState(); // Interrupt any conversion
-        // Knockback might make it lose its target, so briefly wander before FindPotentialTargets re-evaluates.
-        currentState = AiState.Wandering;
-        // Debug.Log($"{gameObject.name} (Enemy) knockback started, conversion interrupted.");
+        if (currentState == AiState.Attacking)
+        {
+            currentAttackActionTimer = 0f; // Cancel current attack action
+             // Don't reset cooldown here, let it run its course or reset it if desired
+        }
+        currentState = AiState.Wandering; // Temporarily go to wander, OnKnockbackEnd will re-evaluate
+        // Debug.Log($"{gameObject.name} (Enemy) knockback started.");
     }
 
     protected override void OnKnockbackEnd()
     {
         base.OnKnockbackEnd();
-        // After knockback, actively find a new target or resume wandering.
-        FindPotentialTargets();
+        // After knockback, actively find player or resume wandering.
+        ScanForPlayer();
         // Debug.Log($"{gameObject.name} (Enemy) knockback ended.");
     }
 
     void Die()
     {
-        // Grant XP, spawn effects, etc.
-        // Example: if (PlayerXPSystem.Instance != null) PlayerXPSystem.Instance.GrantXP(xpValue);
-        Debug.Log($"{gameObject.name} died. XP Value: {xpValue}");
+        Debug.Log($"{gameObject.name} died. Awarding {xpValue} XP.");
+        // Grant XP to player (you'll need a system for this)
+        // Example: if (PlayerExperienceSystem.Instance != null) PlayerExperienceSystem.Instance.GrantXP(xpValue);
+
+        // Spawn death effects, loot, etc. here
+
         Destroy(gameObject);
     }
 }

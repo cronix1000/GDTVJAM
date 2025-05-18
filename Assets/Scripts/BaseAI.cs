@@ -6,7 +6,7 @@ public abstract class BaseAI : MonoBehaviour
     [Tooltip("Base movement speed for the AI.")]
     public float moveSpeed = 3f;
     [Tooltip("Multiplier for speed when the AI is wandering.")]
-    public float wanderSpeedMultiplier = 0.6f;
+    public float wanderSpeedMultiplier = 0.6f; // Applied during PerformWanderBehavior
 
     [Header("Wandering Behavior")]
     [Tooltip("Radius within which the AI will pick new wander destinations.")]
@@ -28,43 +28,35 @@ public abstract class BaseAI : MonoBehaviour
     [Tooltip("Should the AI be restricted by map boundaries?")]
     public bool useMapBoundaries = true;
     [Tooltip("Minimum X and Y coordinates the AI can reach.")]
-    public Vector2 mapMinBounds = new Vector2(0, 0); // Example: Lower-left corner
+    public Vector2 mapMinBounds = new Vector2(0, 0);
     [Tooltip("Maximum X and Y coordinates the AI can reach.")]
-    public Vector2 mapMaxBounds = new Vector2(50f, 50f);   // Example: Upper-right corner
+    public Vector2 mapMaxBounds = new Vector2(50f, 50f);
 
     protected Rigidbody2D rb;
     protected Animator animator; // Optional: Assign in Inspector or will try to find
 
     protected Vector2 currentWanderDestination;
     protected float currentWanderTimer;
-    protected Vector3 _initialPosition; // Stores the position at Start
+    protected Vector3 _initialPosition;
 
-    protected float knockbackActiveDuration = 0f; // Total duration of current knockback
-    protected float currentKnockbackTimer = 0f;   // Countdown for knockback
-
+    protected float knockbackActiveDuration = 0f;
+    protected float currentKnockbackTimer = 0f;
 
     protected virtual void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
 
-        // Attempt to get Animator if not assigned
         if (animator == null) animator = GetComponent<Animator>();
         if (visualsTransform != null && animator == null) animator = visualsTransform.GetComponent<Animator>();
         if (animator == null) animator = GetComponentInChildren<Animator>();
 
-        // Setup visualsTransform
         if (visualsTransform == null)
         {
             Transform foundVisuals = transform.Find("Visuals");
-            if (foundVisuals != null)
+            visualsTransform = foundVisuals != null ? foundVisuals : transform;
+            if (visualsTransform == transform && transform.childCount > 0)
             {
-                visualsTransform = foundVisuals;
-            }
-            else
-            {
-                // Fallback: use the main transform. This might not be ideal for complex hierarchies.
-                visualsTransform = transform;
-                // Debug.LogWarning($"VisualsTransform not set on {gameObject.name} and no 'Visuals' child found. Defaulting to root transform. Sprite flipping might affect children unexpectedly.", this);
+                // Debug.LogWarning($"VisualsTransform not set on {gameObject.name} and no 'Visuals' child found. Defaulting to root. Sprite flipping might affect children.", this);
             }
         }
     }
@@ -78,7 +70,9 @@ public abstract class BaseAI : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"Rigidbody2D not found on {gameObject.name}. AI movement and boundary checks will not work correctly.", this);
+            Debug.LogError($"Rigidbody2D not found on {gameObject.name}. AI movement will not work.", this);
+            enabled = false; // Disable script if no Rigidbody
+            return;
         }
         _initialPosition = transform.position;
         SetNewWanderDestination();
@@ -93,24 +87,20 @@ public abstract class BaseAI : MonoBehaviour
             {
                 OnKnockbackEnd();
             }
-            // During knockback, usually no other logic (like state changes or new movements) should run.
-            return;
+            return; // No other updates during knockback
         }
-        // Derived classes can add non-physics updates here.
+        // Derived classes can add non-physics updates here if needed.
     }
 
     protected virtual void FixedUpdate()
     {
         if (currentKnockbackTimer > 0 || rb == null)
         {
-            // If being knocked back, velocity is typically handled by ApplyKnockback.
-            // If no Rigidbody, can't move or apply constraints.
-            return;
+            return; // No movement or physics updates during knockback or if no Rigidbody
         }
 
-        // IMPORTANT: Derived classes should implement their movement logic (setting rb.velocity or calling rb.MovePosition)
-        // in their own FixedUpdate BEFORE calling base.FixedUpdate() OR this base FixedUpdate will apply constraints
-        // to whatever position/velocity was set.
+        // Movement logic should be handled by derived classes (e.g., in their PerformWanderBehavior or ChasePlayer)
+        // This base FixedUpdate primarily handles applying boundary constraints after movement has been set.
 
         if (useMapBoundaries)
         {
@@ -122,7 +112,6 @@ public abstract class BaseAI : MonoBehaviour
     {
         Vector2 wanderOrigin = wanderAroundInitialPosition ? (Vector2)_initialPosition : rb.position;
         float randomAngle = Random.Range(0f, 2f * Mathf.PI);
-        // Ensure a minimum wander distance to prevent tiny movements, but also respect wanderRadius
         float randomDistance = Random.Range(Mathf.Min(wanderRadius * 0.25f, wanderRadius), wanderRadius);
         Vector2 offset = new Vector2(Mathf.Cos(randomAngle), Mathf.Sin(randomAngle)) * randomDistance;
         currentWanderDestination = wanderOrigin + offset;
@@ -134,6 +123,7 @@ public abstract class BaseAI : MonoBehaviour
         currentWanderTimer = Random.Range(minWanderTime, maxWanderTime);
     }
 
+    // Called by derived classes when in a wandering state
     protected virtual void PerformWanderBehavior()
     {
         if (rb == null || currentKnockbackTimer > 0) return;
@@ -146,7 +136,7 @@ public abstract class BaseAI : MonoBehaviour
         if (distanceToTarget > wanderPointReachedThreshold)
         {
             rb.linearVelocity = directionToTarget * (moveSpeed * wanderSpeedMultiplier);
-            FaceDirection(currentWanderDestination);
+            FaceDirection(directionToTarget); // Pass direction instead of absolute target
         }
         else
         {
@@ -159,13 +149,14 @@ public abstract class BaseAI : MonoBehaviour
         }
     }
 
+    // Called by derived classes to move towards a specific target
     protected virtual void MoveTowardsTarget(Vector2 targetPosition, float speed)
     {
         if (rb == null || currentKnockbackTimer > 0) return;
 
         Vector2 direction = (targetPosition - rb.position).normalized;
         rb.linearVelocity = direction * speed;
-        FaceDirection(targetPosition);
+        FaceDirection(direction); // Pass direction
     }
 
     protected virtual void StopMovement()
@@ -184,11 +175,9 @@ public abstract class BaseAI : MonoBehaviour
         if (currentPosition != clampedPosition)
         {
             rb.position = clampedPosition;
-            // If the AI was moved due to clamping, also stop its velocity to prevent
-            // it from trying to push against the boundary or jittering.
-            if ((clampedPosition - currentPosition).sqrMagnitude > 0.0001f) // If a clamp actually occurred
+            if ((clampedPosition - currentPosition).sqrMagnitude > 0.0001f)
             {
-                 rb.linearVelocity = Vector2.zero;
+                 rb.linearVelocity = Vector2.zero; // Stop if clamped
             }
         }
     }
@@ -200,59 +189,45 @@ public abstract class BaseAI : MonoBehaviour
         return new Vector2(clampedX, clampedY);
     }
 
-    protected virtual void FaceDirection(Vector2 targetPosition)
+    // Modified FaceDirection to accept a direction vector
+    protected virtual void FaceDirection(Vector2 moveDirection)
     {
-        if (visualsTransform == null || rb == null) return;
+        if (visualsTransform == null || moveDirection.sqrMagnitude < 0.01f) return; // Don't flip if not moving or no visuals
 
-        Vector2 direction;
-        if (rb.linearVelocity.sqrMagnitude > 0.01f) // If moving significantly, use velocity direction
+        Vector3 currentScale = visualsTransform.localScale;
+        if (moveDirection.x < -0.01f && currentScale.x > 0) // Moving left, visuals currently right
         {
-            direction = rb.linearVelocity.normalized;
+            currentScale.x *= -1;
         }
-        else // If not moving (or very slowly), face the explicit target position
+        else if (moveDirection.x > 0.01f && currentScale.x < 0) // Moving right, visuals currently left
         {
-            if ((targetPosition - rb.position).sqrMagnitude < 0.001f) return; // Already at target, no direction
-            direction = (targetPosition - rb.position).normalized;
+            currentScale.x *= -1;
         }
-
-        if (Mathf.Abs(direction.x) > 0.01f)
-        {
-            Vector3 currentScale = visualsTransform.localScale;
-            if (direction.x < 0 && currentScale.x > 0) // Moving/facing left, visuals currently right
-            {
-                currentScale.x *= -1;
-            }
-            else if (direction.x > 0 && currentScale.x < 0) // Moving/facing right, visuals currently left
-            {
-                currentScale.x *= -1;
-            }
-            visualsTransform.localScale = currentScale;
-        }
+        visualsTransform.localScale = currentScale;
     }
+
 
     public virtual void ApplyKnockback(Vector2 direction, float force, float duration)
     {
         if (rb != null && rb.bodyType == RigidbodyType2D.Dynamic)
         {
-            rb.linearVelocity = Vector2.zero; // Stop current movement before applying force
+            rb.linearVelocity = Vector2.zero; // Stop current movement
             rb.AddForce(direction.normalized * force, ForceMode2D.Impulse);
             currentKnockbackTimer = duration;
-            knockbackActiveDuration = duration;
+            knockbackActiveDuration = duration; // Store original duration if needed
             OnKnockbackStart();
         }
     }
 
     protected virtual void OnKnockbackStart()
     {
-        // Base implementation can be empty or log. Derived classes override for specific reactions.
-        // Debug.Log($"{gameObject.name} knockback started.");
-      //  if (rb != null) rb.linearVelocity = Vector2.zero; // Ensure velocity is killed if AddForce isn't perfectly replacing it.
+        // Base implementation. Derived classes can override.
+        // if (rb != null) rb.velocity = Vector2.zero; // Ensure velocity is zeroed
     }
 
     protected virtual void OnKnockbackEnd()
     {
-        // Base implementation. Derived classes can call base.OnKnockbackEnd() then add logic.
-        // Debug.Log($"{gameObject.name} knockback ended.");
-        if (rb != null) rb.linearVelocity = Vector2.zero; // Ensure AI is stopped after knockback.
+        // Base implementation.
+        if (rb != null) rb.linearVelocity = Vector2.zero; // Ensure AI is stopped.
     }
 }

@@ -76,7 +76,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -85,12 +85,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 276
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -450,7 +450,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -459,7 +459,21 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      blue-stars_0: -6231405017442136378
+      blue-stars_1: 7586594176719137071
+      blue-stars_10: -954120437654551476
+      blue-stars_11: 990766707336228120
+      blue-stars_12: 4589389309579742469
+      blue-stars_13: -2538129954651210485
+      blue-stars_2: 2095261786976420846
+      blue-stars_3: -1446596492679022047
+      blue-stars_4: 7964146713074774964
+      blue-stars_5: 7442135798324093224
+      blue-stars_6: 3008738534176247600
+      blue-stars_7: 1913179949955564266
+      blue-stars_8: 6363441278570402471
+      blue-stars_9: 183958375956617677
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -759,7 +759,33 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      SpaceShooterAssetPack_Projectiles_0: 4218205773614938160
+      SpaceShooterAssetPack_Projectiles_1: 8177804349947669652
+      SpaceShooterAssetPack_Projectiles_10: 3982623904190093568
+      SpaceShooterAssetPack_Projectiles_11: 4463307054266209226
+      SpaceShooterAssetPack_Projectiles_12: 7378398987723866292
+      SpaceShooterAssetPack_Projectiles_13: -8103984739984831987
+      SpaceShooterAssetPack_Projectiles_14: -8417172804825408869
+      SpaceShooterAssetPack_Projectiles_15: -303180912740997524
+      SpaceShooterAssetPack_Projectiles_16: -1183562665342811611
+      SpaceShooterAssetPack_Projectiles_17: -1413978951766723474
+      SpaceShooterAssetPack_Projectiles_18: -2539964252936171204
+      SpaceShooterAssetPack_Projectiles_19: -7356058916310949777
+      SpaceShooterAssetPack_Projectiles_2: 2341669066279310630
+      SpaceShooterAssetPack_Projectiles_20: 4564273388505187546
+      SpaceShooterAssetPack_Projectiles_21: -9174710313708365013
+      SpaceShooterAssetPack_Projectiles_22: 9191107173619940380
+      SpaceShooterAssetPack_Projectiles_23: -2887547760291045081
+      SpaceShooterAssetPack_Projectiles_24: -3616032387214515707
+      SpaceShooterAssetPack_Projectiles_25: 4260172571512991368
+      SpaceShooterAssetPack_Projectiles_3: 6465335195940240399
+      SpaceShooterAssetPack_Projectiles_4: 182989325840731539
+      SpaceShooterAssetPack_Projectiles_5: 7679401619002086819
+      SpaceShooterAssetPack_Projectiles_6: -2497337789774470994
+      SpaceShooterAssetPack_Projectiles_7: 2183063337177357543
+      SpaceShooterAssetPack_Projectiles_8: 2882899872640448778
+      SpaceShooterAssetPack_Projectiles_9: 668310062965395888
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

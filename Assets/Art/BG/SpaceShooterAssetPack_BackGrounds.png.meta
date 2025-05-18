@@ -359,7 +359,17 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      SpaceShooterAssetPack_BackGrounds_0: -3492764116552408068
+      SpaceShooterAssetPack_BackGrounds_1: 2082466715398839170
+      SpaceShooterAssetPack_BackGrounds_2: 3329705812488128286
+      SpaceShooterAssetPack_BackGrounds_3: -7236365725089201309
+      SpaceShooterAssetPack_BackGrounds_4: 3204651562570916270
+      SpaceShooterAssetPack_BackGrounds_5: 6989513545375235049
+      SpaceShooterAssetPack_BackGrounds_6: 2728532429856988083
+      SpaceShooterAssetPack_BackGrounds_7: -4047402527976761924
+      SpaceShooterAssetPack_BackGrounds_8: -3608365363219182520
+      SpaceShooterAssetPack_BackGrounds_9: 8020814201912375271
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
