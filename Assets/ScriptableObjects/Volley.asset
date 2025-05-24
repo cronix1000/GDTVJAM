@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 944d768b9fe643608a65f716cc304799, type: 3}
+  m_Name: Volley
+  m_EditorClassIdentifier: 
+  weaponName: Volley
+  projectilePrefab: {fileID: 1251030871341324985, guid: ee5dfd7801a549f4590aaae1df2bd86b, type: 3}
+  fireRate: 2
+  projectileSpeed: 15
+  projectileDamage: 1
+  energyCostPerShot: 0
+  muzzleFlashPrefab: {fileID: 0}
+  fireSound: {fileID: 0}
+  fireSoundVolume: 0.7
+  firingMode: 2
+  projectilesInSpread: 3
+  spreadAngle: 30
+  volleyCount: 3
+  volleyDelay: 0.1
+  spiralAngleStep: 15
+  spiralOrientsToTarget: 0

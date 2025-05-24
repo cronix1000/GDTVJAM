@@ -19,7 +19,7 @@ public class Block : MonoBehaviour
     public SpriteRenderer mainSpriteRenderer; // Assign in prefab
     // Potentially add connector sprites for each edge that can be enabled/disabled
 
-    private PlayerGridCell _gridCell; // Reference to the cell it's placed in
+     public PlayerGridCell _gridCell { private set; get; } // Reference to the cell it's placed in
 
     public void Initialize(BlockType type, PlayerGridCell cell)
     {
@@ -69,7 +69,8 @@ public class Block : MonoBehaviour
     {
         Attack,
         Defense,
-        Support
+        Support,
+        Core
     }
     
     // EdgeDirection.cs

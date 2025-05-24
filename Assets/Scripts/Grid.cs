@@ -42,6 +42,11 @@ public class Grid<TGridObject>
         return new Vector3(x, y) * cellSize + originPosition;
     }
 
+    public Vector3 GetLocalPosition(int x, int y)
+    {
+        return new Vector3(x, y) * cellSize;
+    }
+
     // Get grid coordinates from world position
     public void GetXY(Vector3 worldPosition, out int x, out int y)
     {
@@ -91,6 +96,19 @@ public class Grid<TGridObject>
         if (IsValid(x, y))
         {
             OnGridObjectChanged?.Invoke(x, y, gridArray[x,y]);
+        }
+    }
+
+    public void ClearGrid()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                gridArray[x, y] = default(TGridObject);
+                OnGridObjectChanged?.Invoke(x, y, default(TGridObject));
+            }
+            
         }
     }
 }

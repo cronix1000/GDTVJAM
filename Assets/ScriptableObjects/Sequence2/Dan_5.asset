@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5033feeb71a14528aca568b55f7cabf6, type: 3}
+  m_Name: Dan_5
+  m_EditorClassIdentifier: 
+  characterName: Dan
+  characterPortrait: {fileID: -138126421, guid: 778ff8a39a9688347a4217cde83b8483, type: 3}
+  dialogueText: Now that were in the builder, select one of the blocks and place
+    it in a valid spot with left click
+  voiceOverClip: {fileID: 0}
+  displayDuration: 3
+  waitForConfirmation: 0

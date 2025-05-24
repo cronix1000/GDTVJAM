@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84f5491396c24911aac09ca4d42cdcdb, type: 3}
+  m_Name: NewGameSequence
+  m_EditorClassIdentifier: 
+  sequenceID: 0
+  sequenceDisplayName: MainGame
+  steps:
+  - stepName: Story Start
+    type: 0
+    storyCardData: {fileID: 11400000, guid: 2ee6e7ddda3d0054fbfef5b652540223, type: 2}
+    spawnerProfile: {fileID: 0}
+    targetSpawnerID: 
+    enableSpawner: 0
+    waitDuration: 0
+    bossPrefab: {fileID: 0}
+    bossSpawnPoint: {fileID: 0}
+    clearOtherEnemiesOnBossSpawn: 0
+    eventToRaise: 
+    nextSequenceIDToTrigger: 
+  - stepName: Story Start
+    type: 0
+    storyCardData: {fileID: 11400000, guid: 1d3e87d703b97994885501e0fef964f4, type: 2}
+    spawnerProfile: {fileID: 0}
+    targetSpawnerID: 
+    enableSpawner: 0
+    waitDuration: 0
+    bossPrefab: {fileID: 0}
+    bossSpawnPoint: {fileID: 0}
+    clearOtherEnemiesOnBossSpawn: 0
+    eventToRaise: 
+    nextSequenceIDToTrigger: 
+  - stepName: Story Start
+    type: 0
+    storyCardData: {fileID: 11400000, guid: 509927da42abe83448a4a0ce427ec08d, type: 2}
+    spawnerProfile: {fileID: 0}
+    targetSpawnerID: 
+    enableSpawner: 0
+    waitDuration: 0
+    bossPrefab: {fileID: 0}
+    bossSpawnPoint: {fileID: 0}
+    clearOtherEnemiesOnBossSpawn: 0
+    eventToRaise: 
+    nextSequenceIDToTrigger: 
+  autoStartOnGameLoad: 1
+  isRepeatable: 0
+  prerequisiteSequenceIDs: []

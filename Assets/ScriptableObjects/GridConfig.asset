@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: GridConfig
   m_EditorClassIdentifier: 
   width: 10
-  height: 5
+  height: 10
   cellSize: 1

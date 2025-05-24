@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 277777111838701400}
   - component: {fileID: 10727708851279373}
   m_Layer: 0
-  m_Name: Square
+  m_Name: Attack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
