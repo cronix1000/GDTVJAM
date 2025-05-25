@@ -40,8 +40,20 @@ MonoBehaviour:
     eventToRaise: 
     nextSequenceIDToTrigger: 
   - stepName: Story Start
-    type: 7
+    type: 0
     storyCardData: {fileID: 11400000, guid: 509927da42abe83448a4a0ce427ec08d, type: 2}
+    spawnerProfile: {fileID: 0}
+    targetSpawnerID: 
+    enableSpawner: 0
+    waitDuration: 0
+    bossPrefab: {fileID: 0}
+    bossSpawnPoint: {fileID: 0}
+    clearOtherEnemiesOnBossSpawn: 0
+    eventToRaise: 
+    nextSequenceIDToTrigger: 0
+  - stepName: Story Start
+    type: 7
+    storyCardData: {fileID: 0}
     spawnerProfile: {fileID: 0}
     targetSpawnerID: 
     enableSpawner: 0

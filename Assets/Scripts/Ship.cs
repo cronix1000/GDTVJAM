@@ -1,6 +1,14 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+public enum ShipSize
+{
+    small = 5,
+    medium = 10,
+    large = 15,
+    extraLarge = 20
+}
+
 public class Ship : MonoBehaviour
 {
     public List<Transform> AttackBlocks;
@@ -8,7 +16,9 @@ public class Ship : MonoBehaviour
     public List<Transform> UtilityBlocks;
     public List<BlockDataEntry> currentBlockConfiguration = new List<BlockDataEntry>();
     public Transform blockContainer;
-    
+    public ShipSize shipSize = ShipSize.small;
+    public int maxBlockCount = 20; // Maximum number of blocks allowed
+
     [Header("Core Block Settings")]
     public Transform coreBlock; // Reference to the core block
     public Vector3 coreBlockOffset = Vector3.zero; // Optional offset for core block positioning
@@ -45,6 +55,22 @@ public class Ship : MonoBehaviour
         }
 
         blockCount++;
+
+        switch (shipSize)
+        {
+            case ShipSize.small:
+                maxBlockCount = 5;
+                break;
+            case ShipSize.medium:
+                maxBlockCount = 10;
+                break;
+            case ShipSize.large:
+                maxBlockCount = 15;
+                break;
+            case ShipSize.extraLarge:
+                maxBlockCount = 20;
+                break;
+        }
     }
 
     public void SetGameplayComponentsActive(bool isActive)
@@ -73,7 +99,7 @@ public class Ship : MonoBehaviour
         // ApplyConfigurationToPhysicalShip();
     }
 
-    public void ApplyConfigurationToPhysicalShip(PlayerCreatorGridManager gridManagerForPrefabs) 
+    public void ApplyConfigurationToPhysicalShip(PlayerCreatorGridManager gridManagerForPrefabs)
     {
         if (blockContainer == null)
         {
@@ -98,7 +124,7 @@ public class Ship : MonoBehaviour
         // 2. Find core block position first
         BlockDataEntry coreEntry = null;
         Vector3 coreWorldPosition = Vector3.zero;
-        
+
         foreach (BlockDataEntry entry in currentBlockConfiguration)
         {
             Block blockPrefab = gridManagerForPrefabs.GetBlockPrefabByID(entry.blockID);
@@ -133,7 +159,7 @@ public class Ship : MonoBehaviour
 
                 Block newBlockInstance = Instantiate(blockPrefab, blockContainer);
                 newBlockInstance.transform.localPosition = relativePosition;
-                
+
                 // Add to appropriate list and track core block
                 AddBlock(newBlockInstance.transform, blockPrefab.blockType);
             }
@@ -145,13 +171,13 @@ public class Ship : MonoBehaviour
         }
 
         Debug.Log($"{name}: Physical ship configuration applied with {currentBlockConfiguration.Count} blocks.");
-        
+
         // Update block count
         UpdateBlockCount(currentBlockConfiguration.Count);
     }
 
     // Alternative method that uses the grid manager's core block tracking
-    public void ApplyConfigurationToPhysicalShipWithCoreTracking(PlayerCreatorGridManager gridManager) 
+    public void ApplyConfigurationToPhysicalShipWithCoreTracking(PlayerCreatorGridManager gridManager)
     {
         if (blockContainer == null)
         {
@@ -176,7 +202,7 @@ public class Ship : MonoBehaviour
         // 2. Get core block position from grid manager
         Vector3 coreWorldPosition = Vector3.zero;
         bool hasCoreBlock = gridManager.HasCoreBlock;
-        
+
         if (hasCoreBlock)
         {
             Vector2Int coreGridPos = gridManager.CoreBlockPosition;
@@ -206,7 +232,7 @@ public class Ship : MonoBehaviour
 
                 Block newBlockInstance = Instantiate(blockPrefab, blockContainer);
                 newBlockInstance.transform.localPosition = relativePosition;
-                
+
                 // Add to appropriate list and track core block
                 AddBlock(newBlockInstance.transform, blockPrefab.blockType);
             }
@@ -218,7 +244,7 @@ public class Ship : MonoBehaviour
         }
 
         Debug.Log($"{name}: Physical ship configuration applied with {currentBlockConfiguration.Count} blocks.");
-        
+
         // Update block count
         UpdateBlockCount(currentBlockConfiguration.Count);
     }
@@ -227,18 +253,18 @@ public class Ship : MonoBehaviour
     public List<Transform> GetAllBlocksRelativeToCore()
     {
         List<Transform> allBlocks = new List<Transform>();
-        
+
         // Add core block first if it exists
         if (coreBlock != null)
         {
             allBlocks.Add(coreBlock);
         }
-        
+
         // Add other blocks
         allBlocks.AddRange(AttackBlocks);
         allBlocks.AddRange(DefenseBlocks);
         allBlocks.AddRange(UtilityBlocks);
-        
+
         return allBlocks;
     }
 
@@ -246,17 +272,17 @@ public class Ship : MonoBehaviour
     public void CenterShipAroundCore()
     {
         if (coreBlock == null || blockContainer == null) return;
-        
+
         // Calculate the offset needed to center the core block at the container's origin
         Vector3 coreLocalPos = coreBlock.localPosition;
         Vector3 offset = -coreLocalPos;
-        
+
         // Apply offset to all blocks
         foreach (Transform child in blockContainer)
         {
             child.localPosition += offset;
         }
-        
+
         Debug.Log($"{name}: Ship centered around core block with offset {offset}");
     }
 
@@ -265,21 +291,21 @@ public class Ship : MonoBehaviour
     {
         if (blockContainer == null || blockContainer.childCount == 0)
             return transform.position;
-        
+
         Vector3 centerOfMass = Vector3.zero;
         int blockCount = 0;
-        
+
         foreach (Transform child in blockContainer)
         {
             centerOfMass += child.position;
             blockCount++;
         }
-        
+
         if (blockCount > 0)
         {
             centerOfMass /= blockCount;
         }
-        
+
         return centerOfMass;
     }
 
@@ -287,17 +313,17 @@ public class Ship : MonoBehaviour
     public bool ValidateShipConfiguration()
     {
         bool isValid = true;
-        
+
         // Check if core block exists when required
         if (coreBlock == null && currentBlockConfiguration.Count > 0)
         {
             Debug.LogWarning($"{name}: Ship configuration missing core block!");
             isValid = false;
         }
-        
+
         // Check if all blocks are connected (this would require more complex logic)
         // For now, just check basic requirements
-        
+
         return isValid;
     }
 }

@@ -19,7 +19,8 @@ public class ShipShooting : MonoBehaviour
     // public ShipEnergy shipEnergy; // Optional: Reference to ship's energy system
 
     private float _lastFireTime = -Mathf.Infinity; 
-    private float _currentSpiralAngle = 0f;      
+    private float _currentSpiralAngle = 0f;
+    private Ship ship; 
     [SerializeField] private ShipType shipType = ShipType.Enemy; 
 
     void Update()
