@@ -16,5 +16,5 @@ MonoBehaviour:
   characterPortrait: {fileID: -138126421, guid: 778ff8a39a9688347a4217cde83b8483, type: 3}
   dialogueText: To save just X out
   voiceOverClip: {fileID: 0}
-  displayDuration: 3
+  displayDuration: 6
   waitForConfirmation: 1

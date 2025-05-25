@@ -17,5 +17,5 @@ MonoBehaviour:
   dialogueText: Now that were in the builder, select one of the blocks and place
     it in a valid spot with left click
   voiceOverClip: {fileID: 0}
-  displayDuration: 3
+  displayDuration: 6
   waitForConfirmation: 0

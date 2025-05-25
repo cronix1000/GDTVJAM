@@ -18,7 +18,6 @@ public class CharacterFrameUI : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -50,7 +49,7 @@ public class CharacterFrameUI : MonoBehaviour
         foreach (char letter in textToType.ToCharArray())
         {
             targetText.text += letter;
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSecondsRealtime(delay);
         }
     }
 

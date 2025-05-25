@@ -370903,10 +370903,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allGameSequences:
   - {fileID: 11400000, guid: 4eaf83e554db4f84eafdc5b7eaab52b1, type: 2}
-  initialSequenceID: 0
+  - {fileID: 11400000, guid: 8ba07b0b54af7104f89a0cd5e4a30c78, type: 2}
+  initialSequenceID: 1
   storyDisplay: {fileID: 1522802219}
-  enemySpawnManager: {fileID: 0}
-  gameStateManager: {fileID: 0}
+  enemySpawnManager: {fileID: 1683427497}
+  gameStateManager: {fileID: 1156603921}
   timeUntilBossSequence: 300
   bossApproachSequenceID: 
 --- !u!4 &1237516674
@@ -372203,6 +372204,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2048785259}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1683427495
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1683427496}
+  - component: {fileID: 1683427497}
+  m_Layer: 0
+  m_Name: EnemySpawnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1683427496
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683427495}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -179.24051, y: 83.03381, z: -14.992997}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1683427497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1683427495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5420690d1499418cad3b5b02b6897fcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1736119523
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -372738,7 +372783,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.041469958, y: 0.112}
   m_AnchorMax: {x: 0.94847107, y: 0.8880001}
-  m_AnchoredPosition: {x: 0.5900688, y: 66.17241}
+  m_AnchoredPosition: {x: 0.590065, y: 66.17241}
   m_SizeDelta: {x: 10.907, y: -65.8236}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1832343773
@@ -373802,3 +373847,4 @@ SceneRoots:
   - {fileID: 1156603922}
   - {fileID: 1237516674}
   - {fileID: 1993414497}
+  - {fileID: 1683427496}

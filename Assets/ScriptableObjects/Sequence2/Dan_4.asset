@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Dan
   characterPortrait: {fileID: -138126421, guid: 778ff8a39a9688347a4217cde83b8483, type: 3}
-  dialogueText: To Build, Click the 3 bar button your right
+  dialogueText: To build click on the 4 square button on the right
   voiceOverClip: {fileID: 0}
-  displayDuration: 3
-  waitForConfirmation: 1
+  displayDuration: 6
+  waitForConfirmation: 0

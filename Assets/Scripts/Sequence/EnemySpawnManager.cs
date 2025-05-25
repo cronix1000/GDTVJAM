@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace DefaultNamespace.Sequence
 {
@@ -33,6 +34,16 @@ namespace DefaultNamespace.Sequence
         public void SpawnBoss(GameObject stepBossPrefab, Transform stepBossSpawnPoint)
         {
             throw new System.NotImplementedException();
+        }
+
+        public void EnableSpawner(string targetSpawnerID)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void DisableSpawner(string targetSpawnerID)
+        {
+            throw new NotImplementedException();
         }
     }
 }

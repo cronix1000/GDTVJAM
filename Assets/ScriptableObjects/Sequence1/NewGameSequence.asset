@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84f5491396c24911aac09ca4d42cdcdb, type: 3}
   m_Name: NewGameSequence
   m_EditorClassIdentifier: 
-  sequenceID: 0
+  sequenceID: 1
   sequenceDisplayName: MainGame
   steps:
   - stepName: Story Start
@@ -40,7 +40,7 @@ MonoBehaviour:
     eventToRaise: 
     nextSequenceIDToTrigger: 
   - stepName: Story Start
-    type: 0
+    type: 7
     storyCardData: {fileID: 11400000, guid: 509927da42abe83448a4a0ce427ec08d, type: 2}
     spawnerProfile: {fileID: 0}
     targetSpawnerID: 
@@ -50,7 +50,7 @@ MonoBehaviour:
     bossSpawnPoint: {fileID: 0}
     clearOtherEnemiesOnBossSpawn: 0
     eventToRaise: 
-    nextSequenceIDToTrigger: 
+    nextSequenceIDToTrigger: 2
   autoStartOnGameLoad: 1
   isRepeatable: 0
   prerequisiteSequenceIDs: []

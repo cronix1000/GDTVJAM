@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84f5491396c24911aac09ca4d42cdcdb, type: 3}
   m_Name: Sequence2
   m_EditorClassIdentifier: 
-  sequenceID: 1
+  sequenceID: 2
   sequenceDisplayName: Tutorial
   steps:
   - stepName: 
@@ -98,7 +98,8 @@ MonoBehaviour:
     bossSpawnPoint: {fileID: 0}
     clearOtherEnemiesOnBossSpawn: 0
     eventToRaise: 
-    nextSequenceIDToTrigger: 
+    nextSequenceIDToTrigger: 1
   autoStartOnGameLoad: 0
   isRepeatable: 0
-  prerequisiteSequenceIDs: []
+  prerequisiteSequenceIDs:
+  - 1
